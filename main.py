@@ -1,5 +1,6 @@
 import pygame
 import sys
+import rule_sets
 
 SCREEN_WIDTH = 1500
 SCREEN_HEIGHT = 700
@@ -8,7 +9,7 @@ EMPTY_TILE_COLOR = (25,25,25)
 FILLED_TILE_COLOR = (255,255,255)
 
 class CellularAutomata:
-    def __init__(self):
+    def __init__(self, rule_set):
         pygame.init()
         pygame.display.set_caption('Cellular Automata')
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -16,6 +17,7 @@ class CellularAutomata:
         # if a tile is 0 it's empty, 1 is filled
         self.tiles = []
         self.is_running = True
+        self.rule_set = rule_set
 
     def main_loop(self):
         self.init_tiles()
@@ -63,14 +65,19 @@ class CellularAutomata:
                 left_tile = 0 if j == 0 else self.tiles[i][j - 1] # if on left border, left tile is out of bounds so it's empty
                 current_tile = self.tiles[i][j]
                 right_tile = 0 if j == len(self.tiles[i]) - 1 else self.tiles[i][j + 1]
-
                 configuration = (left_tile, current_tile, right_tile)
+                result = self.get_configuration_result(configuration)
 
-                # rule 30
-                if configuration == (1,1,1) or configuration == (1,1,0) or configuration == (1,0,1) or configuration == (0,0,0):
-                    self.tiles[i + 1][j] = 0
-                else:
-                    self.tiles[i + 1][j] = 1
+                # update below tile based on rule set
+                self.tiles[i + 1][j] = result
+
+    def get_configuration_result(self, configuration):
+        # conver the configuration to a string
+        config_str = ''
+        for conf in configuration:
+            config_str += str(conf)
+
+        return rule_sets.rules[self.rule_set][config_str]
 
     def draw_tiles(self):
         for i in range(len(self.tiles)):
@@ -88,5 +95,5 @@ class CellularAutomata:
 
 
 if __name__ == '__main__':
-    cs = CellularAutomata()
+    cs = CellularAutomata(110)
     cs.main_loop()
